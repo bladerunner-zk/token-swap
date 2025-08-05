@@ -9,7 +9,7 @@ import {
 } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
-import type { Orderbook } from "../target/types/orderbook";
+import type { Swap } from "../target/types/swap";
 
 import {
   confirmTransaction,
@@ -32,20 +32,17 @@ const getRandomBigNumber = (size = 8) => {
   return new BN(randomBytes(size));
 };
 
-describe("orderbook", async () => {
-  // Use the cluster and the keypair from Anchor.toml
+describe("swap", async () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  // See https://github.com/coral-xyz/anchor/issues/3122
   const user = (provider.wallet as anchor.Wallet).payer;
   const payer = user;
 
   const connection = provider.connection;
 
-  const program = anchor.workspace.Orderbook as Program<Orderbook>;
+  const program = anchor.workspace.Swap as Program<Swap>;
 
-  // We're going to reuse these accounts across multiple tests
   const accounts: Record<string, PublicKey> = {
     tokenProgram: TOKEN_PROGRAM,
   };
@@ -102,7 +99,6 @@ describe("orderbook", async () => {
       const bobTokenAccountA = tokenAccounts[1][0];
       const bobTokenAccountB = tokenAccounts[1][1];
 
-      // Save the accounts for later use
       accounts.maker = alice.publicKey;
       accounts.taker = bob.publicKey;
       accounts.tokenMintA = tokenMintA.publicKey;
@@ -115,10 +111,8 @@ describe("orderbook", async () => {
   );
 
   it("Puts the tokens Alice offers into the vault when Alice makes an offer", async () => {
-    // Pick a random ID for the offer we'll make
     const offerId = getRandomBigNumber();
 
-    // Then determine the account addresses we'll use for the offer and the vault
     const offer = PublicKey.findProgramAddressSync(
       [
         Buffer.from("offer"),
@@ -146,12 +140,10 @@ describe("orderbook", async () => {
 
     await confirmTransaction(connection, transactionSignature);
 
-    // Check our vault contains the tokens offered
     const vaultBalanceResponse = await connection.getTokenAccountBalance(vault);
     const vaultBalance = new BN(vaultBalanceResponse.value.amount);
     assert(vaultBalance.eq(tokenAOfferedAmount));
 
-    // Check our Offer account contains the correct data
     const offerAccount = await program.account.offer.fetch(offer);
 
     assert(offerAccount.maker.equals(alice.publicKey));
@@ -169,8 +161,6 @@ describe("orderbook", async () => {
 
     await confirmTransaction(connection, transactionSignature);
 
-    // Check the offered tokens are now in Bob's account
-    // (note: there is no before balance as Bob didn't have any offered tokens before the transaction)
     const bobTokenAccountBalanceAfterResponse =
       await connection.getTokenAccountBalance(accounts.takerTokenAccountA);
     const bobTokenAccountBalanceAfter = new BN(
@@ -178,8 +168,6 @@ describe("orderbook", async () => {
     );
     assert(bobTokenAccountBalanceAfter.eq(tokenAOfferedAmount));
 
-    // Check the wanted tokens are now in Alice's account
-    // (note: there is no before balance as Alice didn't have any wanted tokens before the transaction)
     const aliceTokenAccountBalanceAfterResponse =
       await connection.getTokenAccountBalance(accounts.makerTokenAccountB);
     const aliceTokenAccountBalanceAfter = new BN(

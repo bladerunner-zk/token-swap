@@ -6,7 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-orderbook = "Dn1EXBL5q3WbrHmAvDhNzbzUiYV9jA7s6s7uq47pfayY"
+swap = "Dn1EXBL5q3WbrHmAvDhNzbzUiYV9jA7s6s7uq47pfayY"
 
 [registry]
 url = "https://api.apr.dev"

@@ -12,7 +12,7 @@ pub use state::*;
 declare_id!("Dn1EXBL5q3WbrHmAvDhNzbzUiYV9jA7s6s7uq47pfayY");
 
 #[program]
-pub mod orderbook {
+pub mod swap {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
